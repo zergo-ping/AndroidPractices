@@ -28,7 +28,7 @@ fun AppNavHost() {
         startDestination = Routes.ITEMS
     ) {
         composable(route = Routes.ITEMS) {
-            val viewModel: ItemsViewModel = viewModel()
+            val viewModel: ItemsViewModel = viewModel(factory = ItemsViewModel.Factory)
             ItemsRoute(
                 viewModel = viewModel,
                 onItemClick = { itemId ->
@@ -44,7 +44,7 @@ fun AppNavHost() {
             )
         ) { backStackEntry ->
             val itemId = backStackEntry.arguments?.getInt(Routes.ITEM_ID) ?: 0
-            val viewModel: DetailsViewModel = viewModel()
+            val viewModel: DetailsViewModel = viewModel(factory = DetailsViewModel.Factory)
             DetailsRoute(
                 viewModel = viewModel,
                 itemId = itemId,
