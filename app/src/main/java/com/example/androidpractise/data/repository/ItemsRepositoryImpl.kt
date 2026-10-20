@@ -4,6 +4,7 @@ import com.example.androidpractise.data.mapper.toDomain
 import com.example.androidpractise.data.remote.RickAndMortyApi
 import com.example.androidpractise.data.remote.safeApiCall
 import com.example.androidpractise.domain.model.Item
+import com.example.androidpractise.domain.model.ItemFilters
 import com.example.androidpractise.domain.model.ItemsPage
 import com.example.androidpractise.domain.repository.ItemsRepository
 
@@ -12,13 +13,15 @@ class ItemsRepositoryImpl(
 ) : ItemsRepository {
 
     override suspend fun getItems(
-        status: String?,
+        filters: ItemFilters,
         name: String?,
         page: Int
     ): Result<ItemsPage> = safeApiCall {
         api.getCharacters(
             page = page,
-            status = status,
+            status = filters.status,
+            species = filters.species.takeIf { it.isNotBlank() },
+            gender = filters.gender,
             name = name?.takeIf { it.isNotBlank() }
         ).toDomain()
     }

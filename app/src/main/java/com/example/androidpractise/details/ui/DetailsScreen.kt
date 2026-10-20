@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,7 +54,8 @@ fun DetailsRoute(
     DetailsScreen(
         state = state,
         onBack = onBack,
-        onRetry = { viewModel.handleIntent(DetailsIntent.LoadItem(itemId)) }
+        onRetry = { viewModel.handleIntent(DetailsIntent.LoadItem(itemId)) },
+        onToggleFavorite = { viewModel.handleIntent(DetailsIntent.ToggleFavorite) }
     )
 }
 
@@ -61,7 +64,8 @@ fun DetailsRoute(
 fun DetailsScreen(
     state: DetailsState,
     onBack: () -> Unit,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onToggleFavorite: () -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -74,6 +78,29 @@ fun DetailsScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Назад"
                         )
+                    }
+                },
+                actions = {
+                    if (state.item != null) {
+                        IconButton(onClick = onToggleFavorite) {
+                            Icon(
+                                imageVector = if (state.isFavorite) {
+                                    Icons.Filled.Favorite
+                                } else {
+                                    Icons.Filled.FavoriteBorder
+                                },
+                                contentDescription = if (state.isFavorite) {
+                                    "Убрать из избранного"
+                                } else {
+                                    "Добавить в избранное"
+                                },
+                                tint = if (state.isFavorite) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        }
                     }
                 }
             )

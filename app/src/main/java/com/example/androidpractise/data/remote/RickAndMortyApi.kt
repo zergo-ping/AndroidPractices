@@ -16,6 +16,8 @@ interface RickAndMortyApi {
     suspend fun getCharacters(
         @Query("page") page: Int,
         @Query("status") status: String? = null,
+        @Query("species") species: String? = null,
+        @Query("gender") gender: String? = null,
         @Query("name") name: String? = null
     ): CharactersResponseDto
 

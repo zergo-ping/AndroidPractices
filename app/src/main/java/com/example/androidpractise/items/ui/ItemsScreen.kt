@@ -15,11 +15,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,10 +30,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -43,7 +45,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,25 +54,21 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.flowWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.androidpractise.domain.model.Item
-import com.example.androidpractise.domain.model.ItemsTab
 import com.example.androidpractise.items.mvi.ItemsEffect
 import com.example.androidpractise.items.mvi.ItemsIntent
 import com.example.androidpractise.items.mvi.ItemsState
 import com.example.androidpractise.items.viewmodel.ItemsViewModel
 
-private val ItemsTab.icon: ImageVector
-    get() = when (this) {
-        ItemsTab.ALL -> Icons.AutoMirrored.Filled.List
-        ItemsTab.ALIVE -> Icons.Filled.Favorite
-        ItemsTab.DEAD -> Icons.Filled.Star
-    }
-
 @Composable
 fun ItemsRoute(
     viewModel: ItemsViewModel,
-    onItemClick: (Int) -> Unit
+    onItemClick: (Int) -> Unit,
+    onOpenFilters: () -> Unit,
+    onOpenFavorites: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val isFiltersBadgeVisible by viewModel.isFiltersBadgeVisible.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
     val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(viewModel, lifecycleOwner) {
@@ -80,12 +77,17 @@ fun ItemsRoute(
             .collect { effect ->
                 when (effect) {
                     is ItemsEffect.NavigateToDetails -> onItemClick(effect.itemId)
+                    ItemsEffect.NavigateToFilters -> onOpenFilters()
+                    ItemsEffect.NavigateToFavorites -> onOpenFavorites()
+                    is ItemsEffect.ShowMessage -> snackbarHostState.showSnackbar(effect.message)
                 }
             }
     }
 
     ItemsScreen(
         state = state,
+        isFiltersBadgeVisible = isFiltersBadgeVisible,
+        snackbarHostState = snackbarHostState,
         onIntent = viewModel::handleIntent
     )
 }
@@ -94,24 +96,39 @@ fun ItemsRoute(
 @Composable
 fun ItemsScreen(
     state: ItemsState,
+    isFiltersBadgeVisible: Boolean,
+    snackbarHostState: SnackbarHostState,
     onIntent: (ItemsIntent) -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            TopAppBar(title = { Text(text = state.selectedTab.title) })
-        },
-        bottomBar = {
-            NavigationBar {
-                ItemsTab.entries.forEach { tab ->
-                    NavigationBarItem(
-                        selected = state.selectedTab == tab,
-                        onClick = { onIntent(ItemsIntent.SelectTab(tab)) },
-                        icon = { Icon(imageVector = tab.icon, contentDescription = tab.title) },
-                        label = { Text(text = tab.title) }
-                    )
+            TopAppBar(
+                title = { Text(text = "Персонажи") },
+                actions = {
+                    IconButton(onClick = { onIntent(ItemsIntent.OpenFavorites) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Favorite,
+                            contentDescription = "Избранное"
+                        )
+                    }
+                    IconButton(onClick = { onIntent(ItemsIntent.OpenFilters) }) {
+                        BadgedBox(
+                            badge = {
+                                if (isFiltersBadgeVisible) {
+                                    Badge()
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Settings,
+                                contentDescription = "Фильтры"
+                            )
+                        }
+                    }
                 }
-            }
+            )
         }
     ) { innerPadding ->
         Column(
@@ -145,6 +162,7 @@ fun ItemsScreen(
                     else -> ItemList(
                         state = state,
                         onItemClick = { onIntent(ItemsIntent.SelectItem(it)) },
+                        onToggleFavorite = { onIntent(ItemsIntent.ToggleFavorite(it)) },
                         onLoadMore = { onIntent(ItemsIntent.LoadMore) }
                     )
                 }
@@ -183,6 +201,7 @@ private fun SearchField(
 private fun ItemList(
     state: ItemsState,
     onItemClick: (Item) -> Unit,
+    onToggleFavorite: (Item) -> Unit,
     onLoadMore: () -> Unit
 ) {
     val listState = rememberLazyListState()
@@ -226,6 +245,12 @@ private fun ItemList(
                                 .clip(CircleShape)
                         )
                     },
+                    trailingContent = {
+                        FavoriteButton(
+                            isFavorite = item.id in state.favoriteIds,
+                            onClick = { onToggleFavorite(item) }
+                        )
+                    },
                     modifier = Modifier.clickable { onItemClick(item) }
                 )
                 HorizontalDivider()
@@ -257,6 +282,32 @@ private fun ItemList(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun FavoriteButton(
+    isFavorite: Boolean,
+    onClick: () -> Unit
+) {
+    IconButton(onClick = onClick) {
+        Icon(
+            imageVector = if (isFavorite) {
+                Icons.Filled.Favorite
+            } else {
+                Icons.Filled.FavoriteBorder
+            },
+            contentDescription = if (isFavorite) {
+                "Убрать из избранного"
+            } else {
+                "Добавить в избранное"
+            },
+            tint = if (isFavorite) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
     }
 }
 
