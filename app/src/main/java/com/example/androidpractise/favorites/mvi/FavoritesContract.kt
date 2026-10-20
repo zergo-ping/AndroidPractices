@@ -14,5 +14,4 @@ sealed interface FavoritesIntent {
 
 sealed interface FavoritesEffect {
     data class NavigateToDetails(val itemId: Int) : FavoritesEffect
-    data class ShowMessage(val message: String) : FavoritesEffect
 }

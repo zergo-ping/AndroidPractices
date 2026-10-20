@@ -32,8 +32,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -68,7 +66,6 @@ fun ItemsRoute(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val isFiltersBadgeVisible by viewModel.isFiltersBadgeVisible.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
     val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(viewModel, lifecycleOwner) {
@@ -79,7 +76,6 @@ fun ItemsRoute(
                     is ItemsEffect.NavigateToDetails -> onItemClick(effect.itemId)
                     ItemsEffect.NavigateToFilters -> onOpenFilters()
                     ItemsEffect.NavigateToFavorites -> onOpenFavorites()
-                    is ItemsEffect.ShowMessage -> snackbarHostState.showSnackbar(effect.message)
                 }
             }
     }
@@ -87,7 +83,6 @@ fun ItemsRoute(
     ItemsScreen(
         state = state,
         isFiltersBadgeVisible = isFiltersBadgeVisible,
-        snackbarHostState = snackbarHostState,
         onIntent = viewModel::handleIntent
     )
 }
@@ -97,12 +92,10 @@ fun ItemsRoute(
 fun ItemsScreen(
     state: ItemsState,
     isFiltersBadgeVisible: Boolean,
-    snackbarHostState: SnackbarHostState,
     onIntent: (ItemsIntent) -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(text = "Персонажи") },

@@ -28,5 +28,4 @@ sealed interface ItemsEffect {
     data class NavigateToDetails(val itemId: Int) : ItemsEffect
     data object NavigateToFilters : ItemsEffect
     data object NavigateToFavorites : ItemsEffect
-    data class ShowMessage(val message: String) : ItemsEffect
 }

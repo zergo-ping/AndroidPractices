@@ -22,14 +22,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,20 +48,17 @@ fun FavoritesRoute(
     onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
             when (effect) {
                 is FavoritesEffect.NavigateToDetails -> onItemClick(effect.itemId)
-                is FavoritesEffect.ShowMessage -> snackbarHostState.showSnackbar(effect.message)
             }
         }
     }
 
     FavoritesScreen(
         state = state,
-        snackbarHostState = snackbarHostState,
         onIntent = viewModel::handleIntent,
         onBack = onBack
     )
@@ -74,13 +68,11 @@ fun FavoritesRoute(
 @Composable
 fun FavoritesScreen(
     state: FavoritesState,
-    snackbarHostState: SnackbarHostState,
     onIntent: (FavoritesIntent) -> Unit,
     onBack: () -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(text = "Избранное") },

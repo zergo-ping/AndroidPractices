@@ -95,15 +95,7 @@ class ItemsViewModel(
     }
 
     private fun toggleFavorite(item: Item) {
-        viewModelScope.launch {
-            val added = toggleFavoriteUseCase(item)
-            val message = if (added) {
-                "«${item.name}» добавлен в избранное"
-            } else {
-                "«${item.name}» удалён из избранного"
-            }
-            sendEffect(ItemsEffect.ShowMessage(message))
-        }
+        viewModelScope.launch { toggleFavoriteUseCase(item) }
     }
 
     private fun loadFirstPage(debounce: Boolean = false) {

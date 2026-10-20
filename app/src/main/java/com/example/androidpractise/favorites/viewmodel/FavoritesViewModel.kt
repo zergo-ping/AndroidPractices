@@ -49,12 +49,7 @@ class FavoritesViewModel(
     }
 
     private fun remove(intent: FavoritesIntent.RemoveFavorite) {
-        viewModelScope.launch {
-            removeFavoriteUseCase(intent.item.id)
-            sendEffect(
-                FavoritesEffect.ShowMessage("«${intent.item.name}» удалён из избранного")
-            )
-        }
+        viewModelScope.launch { removeFavoriteUseCase(intent.item.id) }
     }
 
     private fun sendEffect(effect: FavoritesEffect) {
