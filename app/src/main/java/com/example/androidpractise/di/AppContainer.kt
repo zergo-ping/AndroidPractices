@@ -1,5 +1,10 @@
 package com.example.androidpractise.di
 
+import com.example.androidpractise.domain.usecase.ObserveProfileUseCase
+import com.example.androidpractise.domain.usecase.SaveProfileUseCase
+import com.example.androidpractise.domain.usecase.ImportAvatarUseCase
+import com.example.androidpractise.domain.usecase.DownloadResumeUseCase
+import com.example.androidpractise.data.repository.ProfileRepositoryImpl
 import android.app.Application
 import androidx.room.Room
 import com.example.androidpractise.data.local.AppDatabase
@@ -41,6 +46,12 @@ class AppContainer(private val application: Application) {
 
     private val favoritesRepository: FavoritesRepository =
         FavoritesRepositoryImpl(database.favoriteDao())
+
+    private val profileRepository = ProfileRepositoryImpl(application)
+    val observeProfileUseCase = ObserveProfileUseCase(profileRepository)
+    val saveProfileUseCase = SaveProfileUseCase(profileRepository)
+    val importAvatarUseCase = ImportAvatarUseCase(profileRepository)
+    val downloadResumeUseCase = DownloadResumeUseCase(profileRepository)
 
     val filtersBadgeCache: FiltersBadgeCache = FiltersBadgeCache()
 
