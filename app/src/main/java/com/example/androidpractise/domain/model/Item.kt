@@ -1,4 +1,4 @@
-package com.example.androidpractise.items.model
+package com.example.androidpractise.domain.model
 
 data class Reference(
     val name: String,
@@ -19,9 +19,3 @@ data class Item(
     val url: String,
     val created: String
 )
-
-enum class ItemsTab(val title: String, val status: String?) {
-    ALL("Все", null),
-    ALIVE("Живые", "Alive"),
-    DEAD("Мёртвые", "Dead")
-}
