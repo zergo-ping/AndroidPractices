@@ -113,7 +113,7 @@ fun DetailsScreen(
                     )
 
                     Text(
-                        text = "Статус: ${item.status}",
+                        text = item.status,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.constrainAs(status) {
                             top.linkTo(name.bottom, margin = 8.dp)
@@ -123,7 +123,7 @@ fun DetailsScreen(
                     )
 
                     Text(
-                        text = "Вид: ${item.species}",
+                        text = item.species,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.constrainAs(species) {
                             top.linkTo(status.bottom, margin = 8.dp)
@@ -133,7 +133,7 @@ fun DetailsScreen(
                     )
 
                     Text(
-                        text = "Тип: ${item.type}",
+                        text = item.type,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.constrainAs(type) {
                             top.linkTo(species.bottom, margin = 8.dp)
@@ -143,7 +143,7 @@ fun DetailsScreen(
                     )
 
                     Text(
-                        text = "Пол: ${item.gender}",
+                        text = item.gender,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.constrainAs(gender) {
                             top.linkTo(type.bottom, margin = 8.dp)
@@ -153,7 +153,7 @@ fun DetailsScreen(
                     )
 
                     Text(
-                        text = "Происхождение: ${item.origin.name}",
+                        text = item.origin,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.constrainAs(origin) {
                             top.linkTo(gender.bottom, margin = 8.dp)
@@ -163,7 +163,7 @@ fun DetailsScreen(
                     )
 
                     Text(
-                        text = "Локация: ${item.location.name}",
+                        text = item.location,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.constrainAs(location) {
                             top.linkTo(origin.bottom, margin = 8.dp)
@@ -173,7 +173,7 @@ fun DetailsScreen(
                     )
 
                     Text(
-                        text = "Создан: ${item.created}",
+                        text = item.created,
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.constrainAs(created) {
                             top.linkTo(location.bottom, margin = 8.dp)
