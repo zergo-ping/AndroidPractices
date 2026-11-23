@@ -98,9 +98,95 @@ fun DetailsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
+<<<<<<< HEAD
                         text = state.error ?: "Не удалось загрузить данные",
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center
+=======
+<<<<<<< HEAD
+                        text = item.name,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.constrainAs(name) {
+                            top.linkTo(image.bottom, margin = 16.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    )
+
+                    Text(
+                        text = item.status,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.constrainAs(status) {
+                            top.linkTo(name.bottom, margin = 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    )
+
+                    Text(
+                        text = item.species,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.constrainAs(species) {
+                            top.linkTo(status.bottom, margin = 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    )
+
+                    Text(
+                        text = item.type,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.constrainAs(type) {
+                            top.linkTo(species.bottom, margin = 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    )
+
+                    Text(
+                        text = item.gender,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.constrainAs(gender) {
+                            top.linkTo(type.bottom, margin = 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    )
+
+                    Text(
+                        text = item.origin,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.constrainAs(origin) {
+                            top.linkTo(gender.bottom, margin = 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    )
+
+                    Text(
+                        text = item.location,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.constrainAs(location) {
+                            top.linkTo(origin.bottom, margin = 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    )
+
+                    Text(
+                        text = item.created,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.constrainAs(created) {
+                            top.linkTo(location.bottom, margin = 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+=======
+                        text = state.error ?: "Не удалось загрузить данные",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center
+>>>>>>> 932a0dc (Practise2)
+>>>>>>> 564097e (conflict resolution)
                     )
                     Button(onClick = onRetry) {
                         Text(text = "Повторить")
