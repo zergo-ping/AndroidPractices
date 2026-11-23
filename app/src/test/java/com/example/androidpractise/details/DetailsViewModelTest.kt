@@ -3,13 +3,21 @@ package com.example.androidpractise.details
 import com.example.androidpractise.details.mvi.DetailsIntent
 import com.example.androidpractise.details.viewmodel.DetailsViewModel
 import com.example.androidpractise.domain.model.Item
+import com.example.androidpractise.domain.model.ItemFilters
 import com.example.androidpractise.domain.model.ItemsPage
 import com.example.androidpractise.domain.model.Reference
+import com.example.androidpractise.domain.repository.FavoritesRepository
 import com.example.androidpractise.domain.repository.ItemsRepository
+import com.example.androidpractise.domain.usecase.GetFavoriteUseCase
 import com.example.androidpractise.domain.usecase.GetItemUseCase
+import com.example.androidpractise.domain.usecase.ObserveIsFavoriteUseCase
+import com.example.androidpractise.domain.usecase.ToggleFavoriteUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -37,9 +45,37 @@ class DetailsViewModelTest {
         override suspend fun getItem(id: Int): Result<Item> =
             runCatching { listOf(rick, morty).first { it.id == id } }
 
-        override suspend fun getItems(status: String?, name: String?, page: Int): Result<ItemsPage> =
+        override suspend fun getItems(filters: ItemFilters, name: String?, page: Int): Result<ItemsPage> =
             error("List requests are unexpected in details tests")
     }
+
+    private val favorites = object : FavoritesRepository {
+        private val items = MutableStateFlow<Map<Int, Item>>(emptyMap())
+
+        override fun observeFavorites() = items.map { it.values.toList() }
+        override fun observeFavoriteIds() = items.map { it.keys }
+        override fun observeIsFavorite(id: Int) = items.map { id in it }
+        override suspend fun getFavorite(id: Int) = items.value[id]
+
+        override suspend fun add(item: Item) {
+            items.value = items.value + (item.id to item)
+        }
+
+        override suspend fun remove(id: Int) {
+            items.value = items.value - id
+        }
+
+        override suspend fun toggle(item: Item): Boolean {
+            val adding = item.id !in items.value
+            if (adding) add(item) else remove(item.id)
+            return adding
+        }
+    }
+
+    private fun createViewModel() = DetailsViewModel(
+        GetItemUseCase(repository), GetFavoriteUseCase(favorites),
+        ObserveIsFavoriteUseCase(favorites), ToggleFavoriteUseCase(favorites)
+    )
 
     @Before
     fun setUp() = Dispatchers.setMain(dispatcher)
@@ -49,7 +85,7 @@ class DetailsViewModelTest {
 
     @Test
     fun loadItemProvidesDisplayReadyDetails() {
-        val viewModel = DetailsViewModel(GetItemUseCase(repository))
+        val viewModel = createViewModel()
 
         viewModel.handleIntent(DetailsIntent.LoadItem(1))
         dispatcher.scheduler.runCurrent()
@@ -72,7 +108,7 @@ class DetailsViewModelTest {
 
     @Test
     fun loadingAnotherItemReplacesPreviousDetails() {
-        val viewModel = DetailsViewModel(GetItemUseCase(repository))
+        val viewModel = createViewModel()
         viewModel.handleIntent(DetailsIntent.LoadItem(1))
         dispatcher.scheduler.runCurrent()
 
@@ -84,5 +120,23 @@ class DetailsViewModelTest {
         assertEquals("Morty Smith", state.item?.name)
         assertEquals("Происхождение: unknown", state.item?.origin)
         assertEquals("Создан: 2017-11-04T18:50:21.651Z", state.item?.created)
+    }
+
+    @Test
+    fun offlineFavoriteUsesCachedDetailsAndCanBeRemoved() = runTest(dispatcher) {
+        val cached = rick.copy(id = 3, name = "Cached character")
+        favorites.add(cached)
+        val viewModel = createViewModel()
+
+        viewModel.handleIntent(DetailsIntent.LoadItem(cached.id))
+        dispatcher.scheduler.runCurrent()
+        assertEquals(cached.name, viewModel.state.value.item?.name)
+        assertEquals("Статус: Alive", viewModel.state.value.item?.status)
+        assertEquals(true, viewModel.state.value.isFavorite)
+        assertEquals(null, viewModel.state.value.error)
+
+        viewModel.handleIntent(DetailsIntent.ToggleFavorite)
+        dispatcher.scheduler.runCurrent()
+        assertFalse(viewModel.state.value.isFavorite)
     }
 }

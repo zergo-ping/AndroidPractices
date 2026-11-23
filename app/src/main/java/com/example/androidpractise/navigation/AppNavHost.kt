@@ -9,11 +9,17 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.androidpractise.details.ui.DetailsRoute
 import com.example.androidpractise.details.viewmodel.DetailsViewModel
+import com.example.androidpractise.favorites.ui.FavoritesRoute
+import com.example.androidpractise.favorites.viewmodel.FavoritesViewModel
+import com.example.androidpractise.filters.ui.FiltersRoute
+import com.example.androidpractise.filters.viewmodel.FiltersViewModel
 import com.example.androidpractise.items.ui.ItemsRoute
 import com.example.androidpractise.items.viewmodel.ItemsViewModel
 
 object Routes {
     const val ITEMS = "items"
+    const val FILTERS = "filters"
+    const val FAVORITES = "favorites"
     const val DETAILS = "details"
     const val ITEM_ID = "itemId"
     const val DETAILS_PATTERN = "$DETAILS/{$ITEM_ID}"
@@ -33,7 +39,28 @@ fun AppNavHost() {
                 viewModel = viewModel,
                 onItemClick = { itemId ->
                     navController.navigate("${Routes.DETAILS}/$itemId")
-                }
+                },
+                onOpenFilters = { navController.navigate(Routes.FILTERS) },
+                onOpenFavorites = { navController.navigate(Routes.FAVORITES) }
+            )
+        }
+
+        composable(route = Routes.FILTERS) {
+            val viewModel: FiltersViewModel = viewModel(factory = FiltersViewModel.Factory)
+            FiltersRoute(
+                viewModel = viewModel,
+                onClose = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = Routes.FAVORITES) {
+            val viewModel: FavoritesViewModel = viewModel(factory = FavoritesViewModel.Factory)
+            FavoritesRoute(
+                viewModel = viewModel,
+                onItemClick = { itemId ->
+                    navController.navigate("${Routes.DETAILS}/$itemId")
+                },
+                onBack = { navController.popBackStack() }
             )
         }
 
