@@ -2,6 +2,7 @@ package com.example.androidpractise.domain.usecase
 
 import com.example.androidpractise.domain.model.Profile
 import com.example.androidpractise.domain.repository.ProfileRepository
+import com.example.androidpractise.domain.model.isValidClassTime
 import java.net.URI
 
 class ObserveProfileUseCase(private val repository: ProfileRepository) {
@@ -10,6 +11,7 @@ class ObserveProfileUseCase(private val repository: ProfileRepository) {
 
 class SaveProfileUseCase(private val repository: ProfileRepository) {
     suspend operator fun invoke(profile: Profile) {
+        require(isValidClassTime(profile.classTime)) { "Введите время в формате HH:mm" }
         require(profile.resumeUrl.isBlank() || isValidResumeUrl(profile.resumeUrl)) {
             "Укажите корректную ссылку HTTPS на файл резюме"
         }

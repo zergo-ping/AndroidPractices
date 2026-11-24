@@ -1,5 +1,6 @@
 package com.example.androidpractise.data.repository
 
+import com.example.androidpractise.profile.reminder.ClassReminder
 import android.content.Context
 import android.net.Uri
 import android.webkit.MimeTypeMap
@@ -23,6 +24,7 @@ import okhttp3.Request
 private val Context.profileDataStore by preferencesDataStore(name = "profile")
 
 class ProfileRepositoryImpl(private val context: Context) : ProfileRepository {
+    private val timeKey = stringPreferencesKey("class_time")
     private val nameKey = stringPreferencesKey("full_name")
     private val avatarKey = stringPreferencesKey("avatar_uri")
     private val resumeKey = stringPreferencesKey("resume_url")
@@ -31,14 +33,19 @@ class ProfileRepositoryImpl(private val context: Context) : ProfileRepository {
         .followSslRedirects(false).build()
 
     override fun observe() = context.profileDataStore.data.map {
-        Profile(it[nameKey].orEmpty(), it[avatarKey].orEmpty(), it[resumeKey].orEmpty())
+        Profile(it[nameKey].orEmpty(), it[avatarKey].orEmpty(), it[resumeKey].orEmpty(), it[timeKey].orEmpty())
     }
     override suspend fun save(profile: Profile) {
+        val trigger = ClassReminder.today(profile.classTime)
+        check(ClassReminder.canSchedule(context)) { "Разрешите точные будильники в настройках приложения" }
+        check(ClassReminder.prepareChannel(context)) { "Разрешите уведомления о начале пары" }
         context.profileDataStore.edit {
+            it[timeKey] = profile.classTime
             it[nameKey] = profile.fullName
             it[avatarKey] = profile.avatarUri
             it[resumeKey] = profile.resumeUrl
         }
+        ClassReminder.schedule(context, trigger, profile.fullName)
     }
     override suspend fun importAvatar(uri: String): String = withContext(Dispatchers.IO) {
         val directory = File(context.filesDir, "avatars").apply { mkdirs() }

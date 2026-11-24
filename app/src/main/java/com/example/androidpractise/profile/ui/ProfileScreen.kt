@@ -1,6 +1,14 @@
 package com.example.androidpractise.profile.ui
 
 import android.Manifest
+import android.app.TimePickerDialog
+import android.provider.Settings
+import androidx.compose.ui.res.painterResource
+import com.example.androidpractise.R
+import com.example.androidpractise.domain.model.isValidClassTime
+import com.example.androidpractise.profile.reminder.ClassReminder
+import java.util.Calendar
+import java.util.Locale
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -41,6 +49,7 @@ import java.io.File
 @Composable
 fun ProfileRoute(viewModel: ProfileViewModel, editing: Boolean, onBack: () -> Unit, onEdit: () -> Unit = {}) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val time by viewModel.classTime.collectAsStateWithLifecycle()
     val name by viewModel.name.collectAsStateWithLifecycle()
     val resume by viewModel.resume.collectAsStateWithLifecycle()
     val avatar by viewModel.avatar.collectAsStateWithLifecycle()
@@ -49,6 +58,27 @@ fun ProfileRoute(viewModel: ProfileViewModel, editing: Boolean, onBack: () -> Un
     var chooseSource by rememberSaveable { mutableStateOf(false) }
     var permissionRequested by rememberSaveable { mutableStateOf(false) }
     var permissionReady by rememberSaveable { mutableStateOf(!editing) }
+
+    val reminderSettings = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (ClassReminder.canSchedule(context)) viewModel.save()
+        else viewModel.reportError("Для напоминания в выбранную минуту разрешите точные будильники")
+    }
+    fun scheduleAfterPermission() {
+        if (!ClassReminder.prepareChannel(context)) {
+            viewModel.reportError("Включите уведомления «Начало пары» в настройках приложения")
+        } else if (Build.VERSION.SDK_INT >= 31 && !ClassReminder.canSchedule(context)) {
+            try {
+                reminderSettings.launch(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                    "package:${context.packageName}".toUri()))
+            } catch (_: ActivityNotFoundException) {
+                viewModel.reportError("Разрешите точные будильники в настройках приложения")
+            }
+        } else viewModel.save()
+    }
+    val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) scheduleAfterPermission()
+        else viewModel.reportError("Для напоминания разрешите уведомления в настройках приложения")
+    }
 
     val storagePermissions = remember {
         when {
@@ -147,9 +177,30 @@ fun ProfileRoute(viewModel: ProfileViewModel, editing: Boolean, onBack: () -> Un
                     label = { Text("Ссылка HTTPS на файл резюме") }, enabled = !state.busy,
                     singleLine = true, modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Uri))
-                Button(onClick = viewModel::save, enabled = !state.busy) { Text("Готово") }
+                val validTime = isValidClassTime(time)
+                OutlinedTextField(value = time, onValueChange = viewModel::changeTime,
+                    label = { Text("Время любимой пары") }, placeholder = { Text("HH:mm") },
+                    singleLine = true, enabled = !state.busy, isError = !validTime,
+                    supportingText = { Text(if (validTime) "Напоминание на сегодня" else "Введите время в формате HH:mm") },
+                    trailingIcon = {
+                        IconButton(enabled = !state.busy, onClick = {
+                            val now = Calendar.getInstance()
+                            val hour = if (validTime) time.take(2).toInt() else now.get(Calendar.HOUR_OF_DAY)
+                            val minute = if (validTime) time.takeLast(2).toInt() else now.get(Calendar.MINUTE)
+                            TimePickerDialog(context, { _, h, m ->
+                                viewModel.changeTime(String.format(Locale.ROOT, "%02d:%02d", h, m))
+                            }, hour, minute, true).show()
+                        }) { Icon(painterResource(R.drawable.ic_class_clock), "Выбрать время") }
+                    }, modifier = Modifier.fillMaxWidth())
+                Button(onClick = {
+                    if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context,
+                            Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else scheduleAfterPermission()
+                }, enabled = validTime && !state.busy) { Text("Готово") }
             } else {
                 Text(state.profile.fullName.ifBlank { "Имя не указано" }, style = MaterialTheme.typography.headlineSmall)
+                if (state.profile.classTime.isNotEmpty()) Text("Время любимой пары: ${state.profile.classTime}")
                 Text(state.profile.resumeUrl.ifBlank { "Резюме не добавлено" })
                 Button(onClick = viewModel::openResume, enabled = !state.busy && state.profile.resumeUrl.isNotBlank()) {
                     Text("Резюме")

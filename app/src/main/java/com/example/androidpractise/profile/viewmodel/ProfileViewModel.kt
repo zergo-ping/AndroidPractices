@@ -34,6 +34,7 @@ class ProfileViewModel(
     val state = mutableState.asStateFlow()
     private val channel = Channel<ProfileEffect>(Channel.BUFFERED)
     val effects = channel.receiveAsFlow()
+    val classTime = savedState.getStateFlow("class_time", "")
     val name = savedState.getStateFlow("name", "")
     val resume = savedState.getStateFlow("resume", "")
     val avatar = savedState.getStateFlow("avatar", "")
@@ -45,6 +46,7 @@ class ProfileViewModel(
             try {
                 observe().collect { profile ->
                     if (savedState.get<Boolean>("initialized") != true) {
+                        savedState["class_time"] = profile.classTime
                         savedState["name"] = profile.fullName
                         savedState["resume"] = profile.resumeUrl
                         savedState["avatar"] = profile.avatarUri
@@ -58,12 +60,13 @@ class ProfileViewModel(
             }
         }
     }
+    fun changeTime(value: String) { savedState["class_time"] = value }
     fun changeName(value: String) { savedState["name"] = value }
     fun changeResume(value: String) { savedState["resume"] = value }
     fun reportError(message: String) { mutableState.update { it.copy(error = message) } }
     fun selectAvatar(uri: String) = work { savedState["avatar"] = importAvatar(uri) }
     fun save() = work {
-        saveProfile(Profile(name.value, avatar.value, resume.value))
+        saveProfile(Profile(name.value, avatar.value, resume.value, classTime.value))
         channel.send(ProfileEffect.Saved)
     }
     fun openResume() = work {
