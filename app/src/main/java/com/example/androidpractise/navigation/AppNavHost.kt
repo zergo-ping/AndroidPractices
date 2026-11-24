@@ -5,7 +5,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import com.example.androidpractise.profile.viewmodel.ProfileViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.androidpractise.profile.ui.ProfileRoute
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
@@ -43,7 +43,7 @@ object Routes {
 }
 
 @Composable
-fun AppNavHost() {
+fun AppNavHost(profileFactory: ViewModelProvider.Factory) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -74,16 +74,12 @@ fun AppNavHost() {
             startDestination = Routes.ITEMS
         ) {
             composable(route = Routes.PROFILE) {
-                val vm: ProfileViewModel = viewModel(
-                    factory = ProfileViewModel.Factory)
-                ProfileRoute(vm, false,
+                ProfileRoute(profileFactory, false,
                     onBack = { navController.popBackStack() },
                     onEdit = { navController.navigate(Routes.EDIT_PROFILE) })
             }
             composable(route = Routes.EDIT_PROFILE) {
-                val vm: ProfileViewModel = viewModel(
-                    factory = ProfileViewModel.Factory)
-                ProfileRoute(vm, true,
+                ProfileRoute(profileFactory, true,
                     onBack = { navController.popBackStack() })
             }
             composable(route = Routes.ITEMS) {

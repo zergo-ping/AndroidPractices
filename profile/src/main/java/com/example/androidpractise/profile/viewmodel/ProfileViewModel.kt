@@ -7,7 +7,8 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.androidpractise.di.AndroidPractiseApplication
+import android.content.Context
+import com.example.androidpractise.data.repository.ProfileRepositoryImpl
 import com.example.androidpractise.domain.model.Profile
 import com.example.androidpractise.domain.usecase.*
 import kotlinx.coroutines.CancellationException
@@ -15,15 +16,15 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-data class ProfileState(
+internal data class ProfileState(
     val profile: Profile = Profile(), val loading: Boolean = true,
     val busy: Boolean = false, val error: String? = null
 )
-sealed interface ProfileEffect {
+internal sealed interface ProfileEffect {
     data object Saved : ProfileEffect
     data class OpenDocument(val uri: String) : ProfileEffect
 }
-class ProfileViewModel(
+internal class ProfileViewModel(
     private val savedState: SavedStateHandle,
     observe: ObserveProfileUseCase,
     private val saveProfile: SaveProfileUseCase,
@@ -83,14 +84,19 @@ class ProfileViewModel(
             } finally { mutableState.update { it.copy(busy = false) } }
         }
     }
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as AndroidPractiseApplication
-                val c = app.container
-                ProfileViewModel(createSavedStateHandle(), c.observeProfileUseCase,
-                    c.saveProfileUseCase, c.importAvatarUseCase, c.downloadResumeUseCase)
-            }
+}
+
+fun profileViewModelFactory(context: Context): ViewModelProvider.Factory {
+    val repository = ProfileRepositoryImpl(context.applicationContext)
+    return viewModelFactory {
+        initializer {
+            ProfileViewModel(
+                createSavedStateHandle(),
+                ObserveProfileUseCase(repository),
+                SaveProfileUseCase(repository),
+                ImportAvatarUseCase(repository),
+                DownloadResumeUseCase(repository)
+            )
         }
     }
 }

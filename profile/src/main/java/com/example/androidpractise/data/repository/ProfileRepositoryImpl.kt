@@ -23,7 +23,7 @@ import okhttp3.Request
 
 private val Context.profileDataStore by preferencesDataStore(name = "profile")
 
-class ProfileRepositoryImpl(private val context: Context) : ProfileRepository {
+internal class ProfileRepositoryImpl(private val context: Context) : ProfileRepository {
     private val timeKey = stringPreferencesKey("class_time")
     private val nameKey = stringPreferencesKey("full_name")
     private val avatarKey = stringPreferencesKey("avatar_uri")

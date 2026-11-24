@@ -4,7 +4,9 @@ import android.Manifest
 import android.app.TimePickerDialog
 import android.provider.Settings
 import androidx.compose.ui.res.painterResource
-import com.example.androidpractise.R
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidpractise.profile.R
 import com.example.androidpractise.domain.model.isValidClassTime
 import com.example.androidpractise.profile.reminder.ClassReminder
 import java.util.Calendar
@@ -47,7 +49,8 @@ import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileRoute(viewModel: ProfileViewModel, editing: Boolean, onBack: () -> Unit, onEdit: () -> Unit = {}) {
+fun ProfileRoute(factory: ViewModelProvider.Factory, editing: Boolean, onBack: () -> Unit, onEdit: () -> Unit = {}) {
+    val viewModel: ProfileViewModel = viewModel(factory = factory)
     val state by viewModel.state.collectAsStateWithLifecycle()
     val time by viewModel.classTime.collectAsStateWithLifecycle()
     val name by viewModel.name.collectAsStateWithLifecycle()
