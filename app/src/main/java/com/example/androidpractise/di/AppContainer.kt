@@ -1,5 +1,6 @@
 package com.example.androidpractise.di
 
+import com.example.androidpractise.profile.viewmodel.profileViewModelFactory
 import android.app.Application
 import androidx.room.Room
 import com.example.androidpractise.data.local.AppDatabase
@@ -41,6 +42,8 @@ class AppContainer(private val application: Application) {
 
     private val favoritesRepository: FavoritesRepository =
         FavoritesRepositoryImpl(database.favoriteDao())
+
+    val profileFactory = profileViewModelFactory(application)
 
     val filtersBadgeCache: FiltersBadgeCache = FiltersBadgeCache()
 

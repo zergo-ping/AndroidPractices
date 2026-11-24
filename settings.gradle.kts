@@ -23,4 +23,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "AndroidPractise"
-include(":app")
+include(":app", ":profile")
