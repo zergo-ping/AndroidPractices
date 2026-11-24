@@ -1,9 +1,9 @@
 package com.example.androidpractise.details.mvi
 
-import com.example.androidpractise.domain.model.Item
+import com.example.androidpractise.details.model.DetailsUiModel
 
 data class DetailsState(
-    val item: Item? = null,
+    val item: DetailsUiModel? = null,
     val isLoading: Boolean = false,
     val isFavorite: Boolean = false,
     val error: String? = null

@@ -34,10 +34,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.example.androidpractise.details.model.DetailsUiModel
 import com.example.androidpractise.details.mvi.DetailsIntent
 import com.example.androidpractise.details.mvi.DetailsState
 import com.example.androidpractise.details.viewmodel.DetailsViewModel
-import com.example.androidpractise.domain.model.Item
 
 @Composable
 fun DetailsRoute(
@@ -141,7 +141,7 @@ fun DetailsScreen(
 }
 
 @Composable
-private fun DetailsContent(item: Item) {
+private fun DetailsContent(item: DetailsUiModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -165,21 +165,21 @@ private fun DetailsContent(item: Item) {
             textAlign = TextAlign.Center
         )
 
-        DetailRow(label = "Статус", value = item.status)
-        DetailRow(label = "Вид", value = item.species)
-        DetailRow(label = "Тип", value = item.type.ifBlank { "—" })
-        DetailRow(label = "Пол", value = item.gender)
-        DetailRow(label = "Происхождение", value = item.origin.name)
-        DetailRow(label = "Локация", value = item.location.name)
-        DetailRow(label = "Эпизодов", value = item.episode.size.toString())
-        DetailRow(label = "Создан", value = item.created)
+        DetailRow(item.status)
+        DetailRow(item.species)
+        DetailRow(item.type)
+        DetailRow(item.gender)
+        DetailRow(item.origin)
+        DetailRow(item.location)
+        DetailRow(item.episodes)
+        DetailRow(item.created)
     }
 }
 
 @Composable
-private fun DetailRow(label: String, value: String) {
+private fun DetailRow(value: String) {
     Text(
-        text = "$label: $value",
+        text = value,
         style = MaterialTheme.typography.bodyLarge,
         modifier = Modifier.fillMaxWidth()
     )

@@ -10,7 +10,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.androidpractise.R
-import com.example.androidpractise.items.ui.ItemsActivity
+import com.example.androidpractise.MainActivity
 import java.util.Calendar
 
 object ClassReminder {
@@ -56,7 +56,7 @@ class ClassReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val owner = intent.getStringExtra(ClassReminder.OWNER) ?: return
         if (!ClassReminder.prepareChannel(context)) return
-        val open = Intent(context, ItemsActivity::class.java).apply {
+        val open = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_MAIN
             addCategory(Intent.CATEGORY_LAUNCHER)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP

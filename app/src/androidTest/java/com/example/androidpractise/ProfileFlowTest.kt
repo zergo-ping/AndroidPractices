@@ -12,14 +12,13 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.androidpractise.items.ui.ItemsActivity
 import org.junit.Rule
 import org.junit.Test
 import java.util.Calendar
 import java.util.Locale
 
 class ProfileFlowTest {
-    @get:Rule val compose = createAndroidComposeRule<ItemsActivity>()
+    @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
     @Test fun editSaveAndRecreateProfile() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
